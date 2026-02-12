@@ -1,0 +1,145 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { mahasiswa } from "@/data/mahasiswa";
+
+const bulanList = [
+  "Januari","Februari","Maret","April","Mei","Juni",
+  "Juli","Agustus","September","Oktober","November","Desember"
+];
+
+export default function Home() {
+  const [kasAktif, setKasAktif] = useState(true);
+  const [bulanAktif, setBulanAktif] = useState("Januari");
+  const [dataBayar, setDataBayar] = useState<{[key:string]: string[]}>({});
+  const [totalKas, setTotalKas] = useState(0);
+
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [password, setPassword] = useState("");
+
+  useEffect(() => {
+    fetch("/api/kas")
+      .then(res => res.json())
+      .then(data => {
+        setDataBayar(data);
+
+        let total = 0;
+        Object.values(data).forEach((bulanArr: any) => {
+          total += bulanArr.length * 10000;
+        });
+        setTotalKas(total);
+      });
+  }, []);
+
+  const login = () => {
+    if (password === "bendahara145") {
+      setIsAdmin(true);
+    } else {
+      alert("Password salah");
+    }
+  };
+
+  const bayar = async (nama: string) => {
+    if (!isAdmin) return;
+
+    const sudahBayar = dataBayar[nama] || [];
+
+    if (sudahBayar.includes(bulanAktif)) {
+      alert("Sudah bayar bulan ini!");
+      return;
+    }
+
+    await fetch("/api/kas", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nama, bulan: bulanAktif })
+    });
+
+    const updated = {
+      ...dataBayar,
+      [nama]: [...sudahBayar, bulanAktif]
+    };
+
+    setDataBayar(updated);
+    setTotalKas(totalKas + 10000);
+  };
+
+  return (
+    <div className="p-10">
+      <h1 className="text-3xl font-bold mb-4">Buku Kas Adbis 25</h1>
+
+      <p className="text-lg mb-4">Total Kas: Rp {totalKas}</p>
+
+      {!isAdmin && (
+        <div className="mb-4">
+          <input
+            type="password"
+            placeholder="Password Bendahara"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="border p-2 mr-2"
+          />
+          <button
+            onClick={login}
+            className="bg-black text-white px-3 py-2 rounded"
+          >
+            Login
+          </button>
+        </div>
+      )}
+
+      <div className="mb-4">
+        <label className="mr-2">Pilih Bulan:</label>
+        <select
+          value={bulanAktif}
+          onChange={(e) => setBulanAktif(e.target.value)}
+          className="border p-1"
+        >
+          {bulanList.map((b) => (
+            <option key={b}>{b}</option>
+          ))}
+        </select>
+      </div>
+
+      <button
+        onClick={() => setKasAktif(!kasAktif)}
+        className="bg-red-500 text-white px-4 py-2 rounded mb-6"
+      >
+        {kasAktif ? "Stop Kas" : "Aktifkan Kas"}
+      </button>
+
+      <button
+        onClick={() => window.open("/api/export")}
+        className="bg-blue-600 text-white px-4 py-2 rounded mb-6 ml-3"
+      >
+        Export ke Excel
+      </button>
+
+      <div className="grid grid-cols-1 gap-2">
+        {mahasiswa.map((nama, index) => {
+          const sudahBayar = dataBayar[nama]?.includes(bulanAktif);
+
+          return (
+            <div
+              key={index}
+              className="border p-2 flex justify-between items-center"
+            >
+              <span>
+                {nama} {sudahBayar && "✅"}
+              </span>
+
+              {isAdmin && kasAktif && !sudahBayar && (
+                <button
+                  onClick={() => bayar(nama)}
+                  className="bg-green-500 text-white px-2 py-1 rounded"
+                >
+                  Bayar
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
