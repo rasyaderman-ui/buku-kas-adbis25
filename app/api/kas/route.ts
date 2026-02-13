@@ -1,41 +1,39 @@
 import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
-
-const filePath = path.join(process.cwd(), "data", "kas.json");
-
-function getData() {
-  if (!fs.existsSync(filePath)) {
-    fs.writeFileSync(filePath, JSON.stringify({}));
-  }
-  const data = fs.readFileSync(filePath, "utf-8");
-  return JSON.parse(data);
-}
-
-function saveData(data: any) {
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-}
+import { supabase } from "@/lib/supabase";
 
 export async function GET() {
-  const data = getData();
-  return NextResponse.json(data);
+  const { data, error } = await supabase
+    .from("kas")
+    .select("nama, bulan");
+
+  if (error) {
+    return NextResponse.json({ error: error.message });
+  }
+
+  // Ubah jadi format { nama: [bulan, bulan] }
+  const result: { [key: string]: string[] } = {};
+
+  data.forEach((row) => {
+    if (!result[row.nama]) {
+      result[row.nama] = [];
+    }
+    result[row.nama].push(row.bulan);
+  });
+
+  return NextResponse.json(result);
 }
 
 export async function POST(request: Request) {
   const body = await request.json();
   const { nama, bulan } = body;
 
-  const data = getData();
+  const { error } = await supabase
+    .from("kas")
+    .insert([{ nama, bulan }]);
 
-  if (!data[nama]) {
-    data[nama] = [];
+  if (error) {
+    return NextResponse.json({ error: error.message });
   }
-
-  if (!data[nama].includes(bulan)) {
-    data[nama].push(bulan);
-  }
-
-  saveData(data);
 
   return NextResponse.json({ success: true });
 }
