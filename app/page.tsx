@@ -101,12 +101,15 @@ export default function Home() {
         </select>
       </div>
 
-      <button
-        onClick={() => setKasAktif(!kasAktif)}
-        className="bg-red-500 text-white px-4 py-2 rounded mb-6"
-      >
-        {kasAktif ? "Stop Kas" : "Aktifkan Kas"}
-      </button>
+      {isAdmin && (
+  <button
+    onClick={() => setKasAktif(!kasAktif)}
+    className="bg-red-500 text-white px-4 py-2 rounded mb-6"
+  >
+    {kasAktif ? "Stop Kas" : "Aktifkan Kas"}
+  </button>
+)}
+
 
       <button
         onClick={() => window.open("/api/export")}
