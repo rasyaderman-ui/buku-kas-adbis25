@@ -1,27 +1,34 @@
 import { NextResponse } from "next/server";
 import ExcelJS from "exceljs";
-import fs from "fs";
-import path from "path";
+import { supabase } from "@/lib/supabase";
+
+export const dynamic = "force-dynamic"; // ⛔ disable cache Vercel
 
 export async function GET() {
-  const filePath = path.join(process.cwd(), "data", "kas.json");
+  const { data, error } = await supabase
+    .from("kas")
+    .select("nama, bulan");
 
-  if (!fs.existsSync(filePath)) {
-    return NextResponse.json({ error: "Data kas belum ada" });
+  if (error) {
+    return NextResponse.json({ error: error.message });
   }
-
-  const raw = fs.readFileSync(filePath, "utf-8");
-  const data = JSON.parse(raw);
 
   const workbook = new ExcelJS.Workbook();
   const sheet = workbook.addWorksheet("Laporan Kas");
 
   sheet.addRow(["Nama", "Jumlah Bulan Bayar", "Total Bayar (Rp)"]);
 
-  Object.entries(data).forEach(([nama, bulanList]: any) => {
-    const jumlahBulan = bulanList.length;
-    const total = jumlahBulan * 10000;
-    sheet.addRow([nama, jumlahBulan, total]);
+  const map: { [key: string]: string[] } = {};
+
+  data.forEach((row) => {
+    if (!map[row.nama]) map[row.nama] = [];
+    map[row.nama].push(row.bulan);
+  });
+
+  Object.entries(map).forEach(([nama, bulanList]) => {
+    const jumlah = bulanList.length;
+    const total = jumlah * 10000;
+    sheet.addRow([nama, jumlah, total]);
   });
 
   const buffer = await workbook.xlsx.writeBuffer();
@@ -30,7 +37,9 @@ export async function GET() {
     headers: {
       "Content-Type":
         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "Content-Disposition": "attachment; filename=laporan-kas.xlsx"
+      "Content-Disposition":
+        "attachment; filename=laporan-kas-" + Date.now() + ".xlsx",
+      "Cache-Control": "no-store, no-cache, must-revalidate, proxy-revalidate"
     }
   });
 }
