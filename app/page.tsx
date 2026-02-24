@@ -136,12 +136,40 @@ const tambahPengeluaran = async () => {
       {isAdmin && (
   <button
     onClick={() => setKasAktif(!kasAktif)}
+    
     className="bg-red-500 text-white px-4 py-2 rounded mb-6"
   >
     {kasAktif ? "Stop Kas" : "Aktifkan Kas"}
   </button>
 )}
+{isAdmin && (
+  <div className="border p-3 mt-4">
+    <h3 className="font-bold mb-2">Tambah Pengeluaran</h3>
 
+    <input
+      type="number"
+      placeholder="Jumlah"
+      value={jumlahKeluar}
+      onChange={(e) => setJumlahKeluar(e.target.value)}
+      className="border p-1 mr-2 text-black"
+    />
+
+    <input
+      type="text"
+      placeholder="Keterangan"
+      value={keterangan}
+      onChange={(e) => setKeterangan(e.target.value)}
+      className="border p-1 mr-2 text-black"
+    />
+
+    <button
+      onClick={tambahPengeluaran}
+      className="bg-red-600 text-white px-3 py-1 rounded"
+    >
+      Simpan Pengeluaran
+    </button>
+  </div>
+)}
 
       <button
         onClick={() => window.open("/api/export")}
