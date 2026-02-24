@@ -101,6 +101,27 @@ const tambahPengeluaran = async () => {
       <p>Total Pemasukan: Rp {totalKas}</p>
 <p>Total Pengeluaran: Rp {totalPengeluaran}</p>
 <p><b>Sisa Kas: Rp {totalKas - totalPengeluaran}</b></p>
+<div className="mt-6">
+  <h3 className="text-lg font-bold mb-2">Riwayat Pengeluaran</h3>
+
+  {pengeluaran.length === 0 ? (
+    <p className="text-gray-400">Belum ada pengeluaran</p>
+  ) : (
+    <div className="space-y-2">
+      {pengeluaran.map((item: any) => (
+        <div
+          key={item.id}
+          className="border p-2 rounded flex justify-between"
+        >
+          <span>{item.keterangan}</span>
+          <span className="text-red-400">
+            Rp {item.jumlah}
+          </span>
+        </div>
+      ))}
+    </div>
+  )}
+</div>
 
       {!isAdmin && (
         <div className="mb-4">
