@@ -151,7 +151,7 @@ const tambahPengeluaran = async () => {
       placeholder="Jumlah"
       value={jumlahKeluar}
       onChange={(e) => setJumlahKeluar(e.target.value)}
-      className="border p-1 mr-2 text-black"
+      className="border p-1 mr-2 bg-black text-white placeholder-gray-400"
     />
 
     <input
@@ -159,7 +159,7 @@ const tambahPengeluaran = async () => {
       placeholder="Keterangan"
       value={keterangan}
       onChange={(e) => setKeterangan(e.target.value)}
-      className="border p-1 mr-2 text-black"
+      className="border p-1 mr-2 bg-black text-white placeholder-gray-400"
     />
 
     <button
