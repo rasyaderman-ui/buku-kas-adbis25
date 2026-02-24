@@ -17,6 +17,11 @@ export default function Home() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [password, setPassword] = useState("");
 
+  const [pengeluaran, setPengeluaran] = useState<any[]>([]);
+const [totalPengeluaran, setTotalPengeluaran] = useState(0);
+const [jumlahKeluar, setJumlahKeluar] = useState("");
+const [keterangan, setKeterangan] = useState("");
+
   useEffect(() => {
     fetch("/api/kas")
       .then(res => res.json())
@@ -30,6 +35,13 @@ export default function Home() {
         setTotalKas(total);
       });
   }, []);
+  fetch("/api/pengeluaran")
+  .then(res => res.json())
+  .then(data => {
+    setPengeluaran(data);
+    const total = data.reduce((sum: number, item: any) => sum + item.jumlah, 0);
+    setTotalPengeluaran(total);
+  });
 
   const login = () => {
     if (password === "bendahara145") {
@@ -64,11 +76,31 @@ export default function Home() {
     setTotalKas(totalKas + 10000);
   };
 
+const tambahPengeluaran = async () => {
+  if (!isAdmin) return;
+  if (!jumlahKeluar) return;
+
+  await fetch("/api/pengeluaran", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      jumlah: parseInt(jumlahKeluar),
+      keterangan
+    })
+  });
+
+  setJumlahKeluar("");
+  setKeterangan("");
+  location.reload();
+};
+
   return (
     <div className="p-10">
       <h1 className="text-3xl font-bold mb-4">Buku Kas Adbis 25</h1>
 
-      <p className="text-lg mb-4">Total Kas: Rp {totalKas}</p>
+      <p>Total Pemasukan: Rp {totalKas}</p>
+<p>Total Pengeluaran: Rp {totalPengeluaran}</p>
+<p><b>Sisa Kas: Rp {totalKas - totalPengeluaran}</b></p>
 
       {!isAdmin && (
         <div className="mb-4">
