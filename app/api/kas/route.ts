@@ -2,15 +2,18 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 
 export async function GET() {
+
+  const tahunSekarang = new Date().getFullYear();
+
   const { data, error } = await supabase
     .from("kas")
-    .select("nama, bulan");
+    .select("nama, bulan")
+    .eq("tahun", tahunSekarang);
 
   if (error) {
     return NextResponse.json({ error: error.message });
   }
 
-  // Ubah jadi format { nama: [bulan, bulan] }
   const result: { [key: string]: string[] } = {};
 
   data.forEach((row) => {
