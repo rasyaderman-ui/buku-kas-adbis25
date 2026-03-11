@@ -27,9 +27,11 @@ export async function POST(request: Request) {
   const body = await request.json();
   const { nama, bulan } = body;
 
+  const tahunSekarang = new Date().getFullYear();
+
   const { error } = await supabase
     .from("kas")
-    .insert([{ nama, bulan }]);
+    .insert([{ nama, bulan, tahun: tahunSekarang }]);
 
   if (error) {
     return NextResponse.json({ error: error.message });
