@@ -6,9 +6,9 @@ export async function GET() {
   const tahunSekarang = new Date().getFullYear();
 
   const { data, error } = await supabase
-    .from("kas")
-    .select("nama, bulan")
-    .eq("tahun", tahunSekarang);
+  .from("kas")
+  .select("nama, bulan")
+  .eq("Tahun", tahunSekarang);
 
   if (error) {
     return NextResponse.json({ error: error.message });
